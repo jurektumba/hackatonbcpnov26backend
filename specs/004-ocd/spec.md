@@ -8,6 +8,12 @@
 Que el ticket OCD llegue **completo y validado** a cada etapa, reduciendo rechazos e ida y vuelta.
 Es probablemente **el mayor ahorro de la solución**: dueño de que se note en la demo.
 
+> **Decisión del equipo:** en esta hackatón el OCD vive en un proyecto de **Jira Software** llamado `OCD`
+> (tipo de issue `OCD`), no en Jira Service Management. El flujo de 7 estados ya está configurado en Jira y
+> `tools/jsm/src/real.ts` lo usa a través del servicio [`jurektumba/jira-backend`](https://github.com/jurektumba/jira-backend):
+> crea el ticket en Validación enlazado a la Historia, transiciona por nombre de estado, comenta el checklist
+> en cada paso y pone la fecha de pase al calendarizar. Prueba: `npm run smoke:ocd`.
+
 ## Parte A — Modelar el OCD en JSM
 - Proyecto JSM (en el sitio de persona 3) con request type **"OCD - One Click Deploy"**.
 - Workflow con los estados de `OCD_FLOW`:

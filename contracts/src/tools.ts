@@ -56,8 +56,11 @@ export interface JsmTools {
   createOcd(input: OcdInput): Promise<OcdTicket>;
   /** Evalúa el checklist para pasar `ocd` al estado `to`. No modifica nada. */
   validateOcdTransition(ocd: OcdTicket, to: OcdState): Promise<ValidationResult>;
-  /** Ejecuta la transición. Debe fallar si la validación no pasa. */
-  transitionOcd(ocd: OcdTicket, to: OcdState): Promise<OcdTicket>;
+  /**
+   * Ejecuta la transición. Debe fallar si la validación no pasa, o si `to` está en
+   * HUMAN_ONLY_OCD_STATES y no se indica `actor` (la persona que aprueba).
+   */
+  transitionOcd(ocd: OcdTicket, to: OcdState, actor?: string): Promise<OcdTicket>;
 }
 
 export type ToolName =

@@ -6,13 +6,13 @@
 
 ## 0:30–2:30 → C1
 - [ ] T-03 MUST Enviar consulta de tiempos a colegas (3 preguntas)
-- [ ] T-04 MUST Cliente HTTP Atlassian compartido (auth Basic) — compartirlo con persona 4
-- [ ] T-05 MUST Conversor mínimo `Spec → ADF`
-- [ ] T-06 MUST `createStory` real
+- [x] T-04 MUST Cliente HTTP Atlassian compartido (auth Basic) — compartirlo con persona 4
+- [x] T-05 MUST Conversor mínimo `Spec → ADF` (texto por párrafos; jira-backend lo convierte a ADF)
+- [x] T-06 MUST `createStory` real
 
 ## 2:40–4:30 → C2
-- [ ] T-07 MUST `createSubtasks` real
-- [ ] T-07b MUST `listProjects` y `getActiveSprint` reales; `createStory` crea en `spec.jiraTarget` (proyecto) y, si hay sprint, agrega la Historia al sprint (Agile API)
+- [x] T-07 MUST `createSubtasks` real
+- [x] T-07b MUST (vía jira-backend; falta probar asignación a sprint con un sprint activo) `listProjects` y `getActiveSprint` reales; `createStory` crea en `spec.jiraTarget` (proyecto) y, si hay sprint, agrega la Historia al sprint (Agile API)
 - [ ] T-08 MUST Prueba `USE_MOCKS=false` con persona 2
 - [ ] T-09 COULD Páginas de lineamientos en Confluence + `getGuidelines` real
 

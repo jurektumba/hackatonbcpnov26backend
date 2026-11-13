@@ -18,6 +18,11 @@ lineamientos de desarrollo. Además, **construir el caso de negocio con números
 
 ## Parte B — Tools
 
+> **Implementación actual:** las credenciales de Atlassian viven en el servicio .NET
+> [`jurektumba/jira-backend`](https://github.com/jurektumba/jira-backend). `tools/jira/src/real.ts` lo llama por HTTP
+> (`JIRA_GATEWAY_URL`, `JIRA_GATEWAY_API_KEY`). Prueba: `npm run smoke:jira` (lecturas) o `-- --crear`.
+> Proyecto real: **GRUP (Grupo009)** en `intellihack.atlassian.net`; tipos `Historia` y `Subtask`.
+
 ### `getGuidelines(solutionType)`
 - Busca por label `lineamiento-<solutionType>` en `CONFLUENCE_SPACE_KEY` (CQL).
 - Devuelve `Guideline`: título, URL, versión (número de versión de la página), contenido en markdown

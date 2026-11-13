@@ -1,28 +1,85 @@
-import type { JiraTools } from "@hack/contracts";
+import type { JiraIssueRef, JiraProject, JiraSprint, JiraTools, Plan, Spec, Task } from "@hack/contracts";
+import { gateway } from "./gateway";
 
 /**
- * TODO persona 3 — ver specs/003-jira-confluence.
- * Jira Cloud REST v3: POST {ATLASSIAN_BASE_URL}/rest/api/3/issue
- *   Auth: Basic base64(ATLASSIAN_EMAIL:ATLASSIAN_API_TOKEN)
- *   OJO: en v3 `description` va en Atlassian Document Format (ADF), no en texto plano.
- * Subtareas: issuetype "Subtask" (verificar el nombre exacto en el proyecto) + `parent: { key }`.
+ * Jira real a través del servicio jurektumba/jira-backend (.NET), que guarda las credenciales de Atlassian.
+ *   JIRA_GATEWAY_URL      URL del servicio (ej. http://localhost:8080)
+ *   JIRA_GATEWAY_API_KEY  clave compartida (header X-Api-Key), si el servicio la exige
+ *   JIRA_STORY_TYPE       tipo de issue para la Historia (en GRUP: "Historia")
  */
+const STORY_TYPE = () => process.env.JIRA_STORY_TYPE ?? "Historia";
+
+/** Descripción de la Historia en texto plano (el servicio la convierte a ADF, una línea por párrafo). */
+export function storyDescription(spec: Spec, plan: Plan): string {
+  const lines = [
+    `Como ${spec.userStory.asA}, quiero ${spec.userStory.iWant}, para ${spec.userStory.soThat}.`,
+    "",
+    spec.summary,
+    "",
+    "CRITERIOS DE ACEPTACIÓN",
+    ...spec.acceptanceCriteria.flatMap((ac) => [
+      `${ac.id} · ${ac.title}`,
+      `Dado ${ac.given}`,
+      `Cuando ${ac.when}`,
+      `Entonces ${ac.then}`,
+      "",
+    ]),
+    "REQUISITOS NO FUNCIONALES",
+    ...spec.nonFunctional.map((r) => `• ${r}`),
+    "",
+  ];
+  if (spec.outOfScope.length) lines.push("FUERA DE ALCANCE", ...spec.outOfScope.map((r) => `• ${r}`), "");
+  lines.push("PLAN DE REVERSIÓN", plan.rollbackPlan, "");
+  if (plan.guidelineRefs.length) lines.push("LINEAMIENTOS APLICADOS", ...plan.guidelineRefs, "");
+  lines.push(`Generado por Pase a partir de la especificación ${spec.id} v${spec.version}.`);
+  return lines.join("\n");
+}
+
+const taskDescription = (t: Task) =>
+  [t.description, t.acceptanceCriteriaIds.length ? `Cubre: ${t.acceptanceCriteriaIds.join(", ")}` : ""]
+    .filter(Boolean)
+    .join("\n");
+
 export function realJira(): JiraTools {
   return {
-    // TODO persona 3: GET /rest/api/3/project/search (proyectos con permiso CREATE_ISSUES).
-    async listProjects() {
-      throw new Error("realJira.listProjects no implementado (persona 3)");
+    listProjects() {
+      return gateway<JiraProject[]>("GET", "/api/projects");
     },
-    // TODO persona 3: tablero del proyecto (GET /rest/agile/1.0/board?projectKeyOrId=KEY) y luego
-    // GET /rest/agile/1.0/board/{id}/sprint?state=active. Para agregar al sprint: POST /rest/agile/1.0/sprint/{id}/issue.
-    async getActiveSprint(_projectKey) {
-      throw new Error("realJira.getActiveSprint no implementado (persona 3)");
+
+    async getActiveSprint(projectKey) {
+      const sprint = await gateway<{ id: number; name: string } | null>(
+        "GET",
+        `/api/projects/${encodeURIComponent(projectKey)}/active-sprint`,
+      );
+      return sprint ? ({ id: sprint.id, name: sprint.name, state: "active" } satisfies JiraSprint) : null;
     },
-    async createStory(_spec, _plan) {
-      throw new Error("realJira.createStory no implementado (persona 3)");
+
+    async createStory(spec, plan) {
+      if (spec.status !== "approved") throw new Error("La spec debe estar aprobada para crear la Historia");
+      if (!spec.jiraTarget) throw new Error("La spec no tiene proyecto de Jira de destino");
+      const { project, sprint } = spec.jiraTarget;
+      const created = await gateway<{ key: string; url: string }>("POST", "/api/tickets", {
+        summary: `[${spec.id}] ${spec.title}`.slice(0, 250),
+        description: storyDescription(spec, plan),
+        issueType: STORY_TYPE(),
+        projectKey: project.key,
+        sprintId: sprint === "backlog" ? undefined : sprint.id,
+        labels: ["pase", spec.id],
+      });
+      return { key: created.key, url: created.url, type: "Story" } satisfies JiraIssueRef;
     },
-    async createSubtasks(_story, _tasks) {
-      throw new Error("realJira.createSubtasks no implementado (persona 3)");
+
+    async createSubtasks(story, tasks) {
+      if (tasks.length === 0) return [];
+      const created = await gateway<{ key: string; url: string }[]>(
+        "POST",
+        `/api/tickets/${encodeURIComponent(story.key)}/subtasks`,
+        {
+          subtasks: tasks.map((t) => ({ summary: `${t.id} · ${t.title}`.slice(0, 250), description: taskDescription(t) })),
+          labels: ["pase"],
+        },
+      );
+      return created.map((c) => ({ key: c.key, url: c.url, type: "Subtask" }) satisfies JiraIssueRef);
     },
   };
 }

@@ -5,5 +5,5 @@ import { realJsm } from "./real";
 export { buildChecklist } from "./checklist";
 
 export function createJsmTools(): JsmTools {
-  return process.env.USE_MOCKS === "false" ? realJsm() : mockJsm();
+  return process.env.USE_MOCKS === "false" && process.env.MOCK_JSM !== "true" ? realJsm() : mockJsm();
 }
