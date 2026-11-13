@@ -6,6 +6,7 @@ import type {
   DevIssueRef,
   Evidence,
   JiraIssueRef,
+  JiraTarget,
   OcdState,
   OcdTicket,
   Plan,
@@ -69,10 +70,14 @@ export interface Session {
 // POST   /sessions/:id/ocd/validate   body: OcdTransitionRequest   -> ValidationResult
 // POST   /sessions/:id/ocd/transition body: OcdTransitionRequest   -> OcdTicket
 // GET    /sessions/:id/events         -> text/event-stream de AgentEvent (SSE)
+// GET    /jira/projects                                            -> JiraProject[]
+// GET    /jira/projects/:key/active-sprint                         -> JiraSprint | null
 
 export interface CreateSessionRequest {
   requirement: string;
   user: string;
+  /** Destino por defecto según las preferencias del usuario. Si falta, el agente pregunta. */
+  jiraTarget?: JiraTarget;
 }
 export interface CreateSessionResponse {
   sessionId: string;
@@ -112,4 +117,10 @@ export type AgentEvent =
     }
   | { type: "ocd.validated"; to: OcdState; result: ValidationResult }
   | { type: "trace.added"; event: TraceEvent }
+  /**
+   * Estado completo de la sesión. El backend lo emite (1) al conectarse un cliente al SSE y
+   * (2) después de cada cambio de estado (spec, fase, artefactos creados, OCD). El frontend lo usa como
+   * fuente de verdad para todo excepto el texto en streaming de los mensajes.
+   */
+  | { type: "session.updated"; session: Session }
   | { type: "error"; message: string };

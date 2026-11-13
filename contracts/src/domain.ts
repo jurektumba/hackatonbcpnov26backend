@@ -5,6 +5,27 @@
 
 export type SolutionType = "cloud-function" | "web-app";
 
+// ---------- Destino en Jira Software ----------
+
+export interface JiraProject {
+  /** Clave del proyecto, prefijo de sus issues (ej. "SQSDT"). */
+  key: string;
+  /** Nombre visible (ej. "SQ Service Desk Transform"). */
+  name: string;
+}
+
+export interface JiraSprint {
+  id: number;
+  name: string;
+  state: "active" | "future";
+}
+
+/** Dónde se crea la Historia: proyecto + sprint (o backlog). */
+export interface JiraTarget {
+  project: JiraProject;
+  sprint: JiraSprint | "backlog";
+}
+
 // ---------- Especificación (SDD) ----------
 
 export type SpecStatus = "draft" | "approved";
@@ -25,6 +46,7 @@ export interface Spec {
   solutionType: SolutionType;
   /** Contexto y problema de negocio. */
   summary: string;
+  /** Frases que completan "Como…", "Quiero…", "Para…". `iWant` y `soThat` en infinitivo (ej. "saber por qué…"). */
   userStory: { asA: string; iWant: string; soThat: string };
   acceptanceCriteria: AcceptanceCriterion[];
   /** Requisitos no funcionales: seguridad, logging, observabilidad, performance. */
@@ -34,6 +56,11 @@ export interface Spec {
   openQuestions: string[];
   version: number;
   status: SpecStatus;
+  /**
+   * Proyecto y sprint donde se creará la Historia. Lo define la preferencia del usuario, el
+   * requerimiento o una pregunta del agente; se puede editar antes de aprobar. Requerido para aprobar.
+   */
+  jiraTarget?: JiraTarget;
   approvedBy?: string;
   /** ISO-8601 */
   approvedAt?: string;
@@ -121,6 +148,10 @@ export interface Evidence {
 
 // ---------- OCD (Jira Service Management) ----------
 
+/**
+ * PROVISIONAL: estados tomados de la descripción del proceso OCD actual. Se confirmarán con el proceso real
+ * (spec 004). El frontend dibuja el stepper a partir de este arreglo, así que cambiarlo aquí basta.
+ */
 export const OCD_FLOW = [
   "VALIDACION",
   "CONGELAMIENTO",

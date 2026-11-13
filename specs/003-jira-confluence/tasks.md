@@ -12,6 +12,7 @@
 
 ## 2:40–4:30 → C2
 - [ ] T-07 MUST `createSubtasks` real
+- [ ] T-07b MUST `listProjects` y `getActiveSprint` reales; `createStory` crea en `spec.jiraTarget` (proyecto) y, si hay sprint, agrega la Historia al sprint (Agile API)
 - [ ] T-08 MUST Prueba `USE_MOCKS=false` con persona 2
 - [ ] T-09 COULD Páginas de lineamientos en Confluence + `getGuidelines` real
 

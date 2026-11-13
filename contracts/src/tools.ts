@@ -7,6 +7,8 @@ import type {
   Evidence,
   Guideline,
   JiraIssueRef,
+  JiraProject,
+  JiraSprint,
   OcdInput,
   OcdState,
   OcdTicket,
@@ -25,7 +27,14 @@ export interface ConfluenceTools {
 
 /** Persona 3 — tools/jira */
 export interface JiraTools {
-  /** Crea la Historia con descripción + criterios de aceptación (Gherkin). Requiere spec aprobada. */
+  /** Proyectos de Jira Software en los que el usuario puede crear historias. */
+  listProjects(): Promise<JiraProject[]>;
+  /** Sprint activo del tablero del proyecto, o null si no hay (entonces se usa el backlog). */
+  getActiveSprint(projectKey: string): Promise<JiraSprint | null>;
+  /**
+   * Crea la Historia con descripción + criterios de aceptación (Gherkin) en `spec.jiraTarget`
+   * (proyecto y sprint/backlog). Requiere spec aprobada y con jiraTarget.
+   */
   createStory(spec: Spec, plan: Plan): Promise<JiraIssueRef>;
   /** Crea una subtarea por cada Task, en el mismo orden. */
   createSubtasks(story: JiraIssueRef, tasks: Task[]): Promise<JiraIssueRef[]>;
@@ -52,6 +61,8 @@ export interface JsmTools {
 }
 
 export type ToolName =
+  | "listProjects"
+  | "getActiveSprint"
   | "getGuidelines"
   | "createStory"
   | "createSubtasks"
