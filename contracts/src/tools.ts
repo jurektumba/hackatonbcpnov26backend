@@ -3,6 +3,7 @@
  * (versión mock y real). El agente solo conoce estas interfaces.
  */
 import type {
+  ApproverRole,
   DevIssueRef,
   Evidence,
   Guideline,
@@ -61,6 +62,8 @@ export interface JsmTools {
    * HUMAN_ONLY_OCD_STATES y no se indica `actor` (la persona que aprueba).
    */
   transitionOcd(ocd: OcdTicket, to: OcdState, actor?: string): Promise<OcdTicket>;
+  /** Registra la aprobación de un rol (solo en estado APROBACION). La da siempre una persona. */
+  approveOcd(ocd: OcdTicket, role: ApproverRole, approvedBy: string): Promise<OcdTicket>;
 }
 
 export type ToolName =
@@ -74,7 +77,8 @@ export type ToolName =
   | "collectEvidence"
   | "createOcd"
   | "validateOcdTransition"
-  | "transitionOcd";
+  | "transitionOcd"
+  | "approveOcd";
 
 export interface ToolSet {
   confluence: ConfluenceTools;

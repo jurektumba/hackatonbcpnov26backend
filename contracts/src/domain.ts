@@ -164,8 +164,45 @@ export const OCD_FLOW = [
 
 export type OcdState = (typeof OCD_FLOW)[number];
 
-/** Estados a los que SOLO un humano puede transicionar. El agente nunca lo hace. */
-export const HUMAN_ONLY_OCD_STATES: readonly OcdState[] = ["APROBACION", "PRODUCCION"];
+/**
+ * Estados a los que SOLO un humano puede transicionar. El agente nunca lo hace.
+ * APROBACION ya no está aquí: entrar a Aprobación significa "esperando aprobaciones";
+ * las aprobaciones las dan las personas de cada rol (OcdApproval) y PRODUCCION exige que estén completas.
+ */
+export const HUMAN_ONLY_OCD_STATES: readonly OcdState[] = ["PRODUCCION"];
+
+// ---------- Aprobadores del OCD ----------
+
+export const APPROVER_ROLES = ["LIDER_TECNICO", "CHAPTER_LEAD", "QA_CHAPTER_LEAD", "PO", "SEGURIDAD"] as const;
+
+export type ApproverRole = (typeof APPROVER_ROLES)[number];
+
+export interface OcdApproval {
+  role: ApproverRole;
+  /** Obligatoria para pasar a Producción. SEGURIDAD solo lo es cuando el requerimiento es de seguridad. */
+  required: boolean;
+  approvedBy?: string;
+  /** ISO-8601 */
+  approvedAt?: string;
+}
+
+const SECURITY_TERMS = /seguridad|vulnerab|checkmarx|checkmark|sast|credencial|secreto|xss|inyecci|injection/i;
+
+/** Un requerimiento necesita al analista de seguridad cuando trata de seguridad. */
+export function requiresSecurityReview(spec: Spec): boolean {
+  return [spec.title, spec.summary, ...spec.nonFunctional].some((t) => SECURITY_TERMS.test(t));
+}
+
+/** Aprobaciones iniciales (todas pendientes) para un OCD. */
+export function buildApprovals(spec: Spec): OcdApproval[] {
+  const security = requiresSecurityReview(spec);
+  return APPROVER_ROLES.map((role) => ({ role, required: role === "SEGURIDAD" ? security : true }));
+}
+
+/** Roles obligatorios que todavía no aprueban. */
+export function pendingApprovals(approvals: OcdApproval[] | undefined): OcdApproval[] {
+  return (approvals ?? []).filter((a) => a.required && !a.approvedBy);
+}
 
 export interface OcdInput {
   spec: Spec;
@@ -189,6 +226,8 @@ export interface OcdTicket {
   evidence: Evidence[];
   /** ISO-8601, se completa en CALENDARIZACION. */
   scheduledFor?: string;
+  /** Aprobaciones por rol; se completan en el estado APROBACION. */
+  approvals?: OcdApproval[];
 }
 
 export interface ValidationCheck {

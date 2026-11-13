@@ -1,5 +1,5 @@
-import { HUMAN_ONLY_OCD_STATES, type JsmTools, type OcdTicket } from "@hack/contracts";
-import { buildChecklist } from "./checklist";
+import { HUMAN_ONLY_OCD_STATES, buildApprovals, type JsmTools, type OcdTicket } from "@hack/contracts";
+import { applyApproval, buildChecklist } from "./checklist";
 
 const BASE = "https://ejemplo.atlassian.net/servicedesk/customer/portal/1";
 
@@ -19,7 +19,11 @@ export function mockJsm(): JsmTools {
         storyKey: input.story.key,
         prUrl: input.pullRequest.url,
         evidence: input.evidence,
+        approvals: buildApprovals(input.spec),
       };
+    },
+    async approveOcd(ocd, role, approvedBy) {
+      return applyApproval(ocd, role, approvedBy);
     },
     async validateOcdTransition(ocd, to) {
       return buildChecklist(ocd, to);

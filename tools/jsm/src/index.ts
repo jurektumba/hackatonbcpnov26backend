@@ -2,7 +2,7 @@ import type { JsmTools } from "@hack/contracts";
 import { mockJsm } from "./mock";
 import { realJsm } from "./real";
 
-export { buildChecklist } from "./checklist";
+export { APPROVER_LABELS, applyApproval, buildChecklist } from "./checklist";
 
 export function createJsmTools(): JsmTools {
   return process.env.USE_MOCKS === "false" && process.env.MOCK_JSM !== "true" ? realJsm() : mockJsm();
