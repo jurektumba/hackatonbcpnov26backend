@@ -25,10 +25,10 @@ async function main() {
   const target: JiraTarget = { project, sprint: sprint ?? "backlog" };
   const spec: Spec = {
     id: "REQ-PRUEBA",
-    title: "[PRUEBA Pase] Historia de prueba de la integración (se puede eliminar)",
+    title: "[PRUEBA Lanzalo] Historia de prueba de la integración (se puede eliminar)",
     solutionType: "web-app",
-    summary: "Historia creada por la prueba de humo de Pase.",
-    userStory: { asA: "equipo IntelliHack", iWant: "probar la integración con Jira", soThat: "confirmar que Pase crea historias" },
+    summary: "Historia creada por la prueba de humo de Lanzalo.",
+    userStory: { asA: "equipo IntelliHack", iWant: "probar la integración con Jira", soThat: "confirmar que Lanzalo crea historias" },
     acceptanceCriteria: [{ id: "AC-01", title: "Se crea", given: "la spec aprobada", when: "se aprueba", then: "existe la Historia" }],
     nonFunctional: [],
     outOfScope: [],

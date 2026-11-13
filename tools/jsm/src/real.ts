@@ -10,7 +10,7 @@ import { buildChecklist } from "./checklist";
  * El flujo del tipo OCD en Jira tiene un estado por cada OcdState (ver JIRA_STATUS).
  */
 
-/** Nombre del estado en Jira para cada estado del flujo de Pase. */
+/** Nombre del estado en Jira para cada estado del flujo de Lanzalo. */
 export const JIRA_STATUS: Record<OcdState, string> = {
   VALIDACION: "Validación",
   CONGELAMIENTO: "Congelamiento",
@@ -44,13 +44,13 @@ export function ocdDescription(input: OcdInput): string {
     "PLAN DE REVERSIÓN",
     plan.rollbackPlan,
     "",
-    "Generado por Pase. Las transiciones a Aprobación y Producción las hace una persona.",
+    "Generado por Lanzalo. Las transiciones a Aprobación y Producción las hace una persona.",
   ].join("\n");
 }
 
 function checklistComment(to: OcdState, result: ValidationResult, actor?: string): string {
   return [
-    `Pase: checklist para pasar a ${JIRA_STATUS[to]}${actor ? ` (acción de ${actor})` : " (agente)"}`,
+    `Lanzalo: checklist para pasar a ${JIRA_STATUS[to]}${actor ? ` (acción de ${actor})` : " (agente)"}`,
     ...result.checks.map((c) => `${c.passed ? "✓" : "✗"} ${c.description}${c.detail ? `: ${c.detail}` : ""}`),
   ].join("\n");
 }
@@ -69,7 +69,7 @@ export function realJsm(): JsmTools {
         description: ocdDescription(input),
         issueType: issueType(),
         projectKey: projectKey(),
-        labels: ["pase", spec.id],
+        labels: ["lanzalo", spec.id],
         relatesTo: story.key,
         initialStatus: JIRA_STATUS.VALIDACION,
       });
