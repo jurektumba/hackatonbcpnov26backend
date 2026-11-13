@@ -74,6 +74,31 @@ después. Si algo real no está a las 4:30, **se presenta con su mock** y se dic
 
 - [ ] (0:00) Persona 3 crea el sitio Atlassian Cloud Free y comparte la invitación — **en paralelo** con lo demás.
 - [ ] (0:00) Todos: clonar **ambos repos como carpetas hermanas**, `npm install` en el que les toca, `npm run demo:mock` en el backend.
-- [ ] (0:05) Acordar la estrategia de ramas (pendiente de definir por el equipo).
+- [ ] (0:05) Cada uno hace `git switch` a su rama `feature/pX-*` (ya creadas; ver sección 7).
 - [ ] (0:10) Revisión de `contracts/src/*.ts` y del flujo OCD: **solo cambios que bloqueen a alguien**.
 - [ ] (0:25) Cada uno abre su spec con su IA y arranca. Persona 5 lanza ya la consulta del Copilot coding agent.
+
+## 7. Estrategia de ramas — GitHub Flow con ramas cortas
+
+GitFlow (`develop`, `release/*`, `hotfix/*`) es demasiado para 6 h. Usamos:
+
+- **`main` siempre funciona** y es lo que se presenta.
+- **Una rama por persona**, ya creadas desde `main`:
+
+  | Repo | Rama | Persona |
+  |---|---|---|
+  | frontend | `feature/p1-web` | 1 |
+  | backend | `feature/p2-agente` | 2 |
+  | backend | `feature/p3-jira` | 3 |
+  | backend | `feature/p4-ocd` | 4 |
+  | backend | `feature/p5-github` | 5 |
+
+- **PRs pequeños y frecuentes a `main`:** mínimo **uno por hora**, y obligatorio antes de **C1 (2:30)** y **C2 (4:30)**.
+  Antes de abrir el PR: `git pull origin main` en tu rama y resolver conflictos ahí, no en `main`.
+- **Revisión express:** el PR se mergea si `npm run typecheck` (+ `npm run demo:mock` en backend / `npm run build` en
+  frontend) pasa. **Los PRs que tocan `contracts/` los aprueba la persona 2.** Merge con *squash*.
+- **Después de cada merge a `main`:** los demás hacen `git pull origin main` en su rama.
+- **Tags de respaldo en `main`:** la persona 2 crea `c1` y `c2` en ambos repos al cerrar cada hito
+  (`git tag c2 && git push origin c2`). Si algo se rompe durante el pulido, la demo se hace desde `c2`.
+- **Freeze (5:15):** no se mergea nada más a `main` salvo arreglos acordados por el equipo.
+

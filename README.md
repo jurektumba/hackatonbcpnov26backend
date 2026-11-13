@@ -42,6 +42,19 @@ git clone https://github.com/hybridcloudcompany/hackatonbcpnov26backend.git
 cd hackatonbcpnov26backend && npm install && cp .env.example .env && npm run demo:mock
 ```
 
+Luego cambia a tu rama: `feature/p2-agente`, `feature/p3-jira`, `feature/p4-ocd` o `feature/p5-github`.
+
+```bash
+git switch feature/p2-agente
+```
+
+## Ramas (GitHub Flow)
+
+- `main` siempre funciona y es lo que se presenta. Cada persona trabaja en su `feature/pX-*`.
+- PR a `main` **mínimo cada hora** y obligatorio antes de C1 (2:30) y C2 (4:30); antes, `git pull origin main` en tu rama.
+- Se mergea (squash) si `npm run typecheck && npm run demo:mock` pasa. Si el PR toca `contracts/`, lo aprueba la persona 2.
+- Tags `c1` y `c2` en `main` como punto de retorno para la demo. Detalle: spec 000, sección 7.
+
 `demo:mock` corre el flujo completo con mocks. Con `USE_MOCKS=false` usa las APIs reales: es la prueba de
 humo en cada punto de integración.
 

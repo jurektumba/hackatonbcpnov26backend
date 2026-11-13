@@ -21,3 +21,4 @@
 
 ## 4:30–5:15
 - [ ] T-12 MUST Verificar plan B (`SCRIPTED` + mocks) de punta a punta
+- [ ] T-13 MUST Crear tags `c1` y `c2` en `main` de ambos repos al cerrar cada hito
