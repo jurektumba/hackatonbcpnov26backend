@@ -254,6 +254,14 @@ El re-escaneo de Checkmarx queda como evidencia obligatoria: el OCD no avanza si
 
 export const SCENARIOS: DemoScenario[] = [alerta, epsm];
 
+/** Escenario que coincide con el requerimiento por palabras clave, o null si ninguno. */
+export function matchScenario(requirement: string): DemoScenario | null {
+  const text = requirement.toLowerCase();
+  const scored = SCENARIOS.map((s) => ({ s, hits: s.keywords.filter((k) => text.includes(k)).length }));
+  const best = scored.reduce((a, b) => (b.hits > a.hits ? b : a));
+  return best.hits > 0 ? best.s : null;
+}
+
 /** Elige el escenario según el texto del requerimiento. Si nada coincide, usa el primero. */
 export function findScenario(requirement: string): DemoScenario {
   const text = requirement.toLowerCase();

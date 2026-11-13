@@ -88,16 +88,22 @@ export async function copilotBrain(): Promise<Brain> {
   const client = new CopilotClient();
   await client.start();
   const model = process.env.COPILOT_MODEL || undefined;
-  const timeout = Number(process.env.COPILOT_TIMEOUT_MS ?? 120000);
+  const timeout = Number(process.env.COPILOT_TIMEOUT_MS ?? 90000);
 
   /** Una sesión corta por pedido, sin herramientas y rechazando cualquier permiso. */
-  async function ask<T>(prompt: string, schema?: z.ZodType<T>): Promise<T | string> {
+  async function ask<T>(prompt: string, schema?: z.ZodType<T>, onDelta?: (delta: string) => void): Promise<T | string> {
     const session: CopilotSession = await client.createSession({
       model,
+      streaming: Boolean(onDelta),
       availableTools: [],
       systemMessage: { mode: "append", content: SYSTEM },
       onPermissionRequest: () => ({ kind: "reject", feedback: "Lanzalo no permite herramientas al modelo." }),
     });
+    if (onDelta) {
+      session.on("assistant.message_delta", (event) => {
+        if (event.data.deltaContent) onDelta(event.data.deltaContent);
+      });
+    }
     try {
       if (schema) return await session.sendAndWait(prompt, schema, timeout);
       const msg = await session.sendAndWait({ prompt }, timeout);
@@ -111,6 +117,7 @@ export async function copilotBrain(): Promise<Brain> {
 
   const brain: Brain = {
     name: `copilot${model ? `:${model}` : ""}`,
+    slow: true,
 
     async solutionType(requirement) {
       if (!types.has(requirement)) {
@@ -123,11 +130,13 @@ export async function copilotBrain(): Promise<Brain> {
       return types.get(requirement)!;
     },
 
-    async discover({ requirement, guideline }) {
+    async discover({ requirement, guideline, onDelta }) {
       return (await ask(
         `Requerimiento del usuario:\n"""${requirement}"""\n\n${guidelineText(guideline)}\n\n` +
           `Escribe un mensaje breve: una línea diciendo qué lineamiento aplicaste y luego como máximo 3 preguntas aclaratorias numeradas (1., 2., 3.). ` +
           `No preguntes por el proyecto de Jira ni por el sprint.`,
+        undefined,
+        onDelta,
       )) as string;
     },
 

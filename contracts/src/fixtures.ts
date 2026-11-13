@@ -130,6 +130,27 @@ export const demoTasks: Task[] = [
   },
 ];
 
+/** Lineamiento temático: aplica a requerimientos de seguridad, además del lineamiento del tipo de solución. */
+export const demoSecurityGuideline: Guideline = {
+  solutionType: "web-app",
+  title: "Estándar de remediación de vulnerabilidades (SAST)",
+  url: "https://ejemplo.atlassian.net/wiki/spaces/LIN/pages/1003/Estandar+Remediacion+SAST",
+  version: "2.1",
+  content:
+    "## Alcance\n- Observaciones altas y medias se cierran antes del pase\n- Bajas: corregir o registrar como deuda técnica\n" +
+    "## Falsos positivos\n- Requieren justificación y visto bueno de Seguridad de la Información\n" +
+    "## Evidencia\n- Re-escaneo Checkmarx adjunto al OCD con 0 altas y 0 medias\n" +
+    "## Calidad\n- Una prueba por hallazgo corregido; sin regresiones funcionales",
+  checklist: [
+    "Altas y medias cerradas antes del pase",
+    "Falsos positivos justificados y aprobados por Seguridad",
+    "Una prueba por hallazgo corregido",
+    "Sin secretos en el repositorio",
+    "Re-escaneo Checkmarx adjunto al OCD",
+    "Plan de reversión documentado",
+  ],
+};
+
 export const demoGuidelines: Record<"cloud-function" | "web-app", Guideline> = {
   "cloud-function": {
     solutionType: "cloud-function",

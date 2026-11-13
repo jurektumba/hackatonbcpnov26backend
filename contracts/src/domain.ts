@@ -188,9 +188,14 @@ export interface OcdApproval {
 
 const SECURITY_TERMS = /seguridad|vulnerab|checkmarx|checkmark|sast|credencial|secreto|xss|inyecci|injection/i;
 
+/** El texto trata de seguridad (vulnerabilidades, Checkmarx, credenciales…). */
+export function mentionsSecurity(text: string): boolean {
+  return SECURITY_TERMS.test(text);
+}
+
 /** Un requerimiento necesita al analista de seguridad cuando trata de seguridad. */
 export function requiresSecurityReview(spec: Spec): boolean {
-  return [spec.title, spec.summary, ...spec.nonFunctional].some((t) => SECURITY_TERMS.test(t));
+  return [spec.title, spec.summary, ...spec.nonFunctional].some(mentionsSecurity);
 }
 
 /** Aprobaciones iniciales (todas pendientes) para un OCD. */

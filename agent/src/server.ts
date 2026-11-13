@@ -13,8 +13,8 @@ import { createToolSet } from "./tools";
 const PORT = Number(process.env.AGENT_PORT ?? 4000);
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "*";
 
-const brain = await createBrain();
-const orchestrator = new Orchestrator(createToolSet(), brain);
+const { brain, backup } = await createBrain();
+const orchestrator = new Orchestrator(createToolSet(), brain, backup);
 
 function cors(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
