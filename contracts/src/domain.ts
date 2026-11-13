@@ -121,6 +121,10 @@ export interface Evidence {
 
 // ---------- OCD (Jira Service Management) ----------
 
+/**
+ * PROVISIONAL: estados tomados de la descripción del proceso OCD actual. Se confirmarán con el proceso real
+ * (spec 004). El frontend dibuja el stepper a partir de este arreglo, así que cambiarlo aquí basta.
+ */
 export const OCD_FLOW = [
   "VALIDACION",
   "CONGELAMIENTO",

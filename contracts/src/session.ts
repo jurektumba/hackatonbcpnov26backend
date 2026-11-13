@@ -112,4 +112,10 @@ export type AgentEvent =
     }
   | { type: "ocd.validated"; to: OcdState; result: ValidationResult }
   | { type: "trace.added"; event: TraceEvent }
+  /**
+   * Estado completo de la sesión. El backend lo emite (1) al conectarse un cliente al SSE y
+   * (2) después de cada cambio de estado (spec, fase, artefactos creados, OCD). El frontend lo usa como
+   * fuente de verdad para todo excepto el texto en streaming de los mensajes.
+   */
+  | { type: "session.updated"; session: Session }
   | { type: "error"; message: string };
