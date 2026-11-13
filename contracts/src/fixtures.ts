@@ -20,7 +20,7 @@ export const demoSpec: Spec = {
   userStory: {
     asA: "cliente del banco",
     iWant: "recibir una alerta cuando supere mi límite diario de transacciones",
-    soThat: "sepa por qué se rechazan mis operaciones sin tener que llamar al call center",
+    soThat: "saber por qué se rechazan mis operaciones sin tener que llamar al call center",
   },
   acceptanceCriteria: [
     {

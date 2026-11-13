@@ -25,6 +25,7 @@ export interface Spec {
   solutionType: SolutionType;
   /** Contexto y problema de negocio. */
   summary: string;
+  /** Frases que completan "Como…", "Quiero…", "Para…". `iWant` y `soThat` en infinitivo (ej. "saber por qué…"). */
   userStory: { asA: string; iWant: string; soThat: string };
   acceptanceCriteria: AcceptanceCriterion[];
   /** Requisitos no funcionales: seguridad, logging, observabilidad, performance. */
