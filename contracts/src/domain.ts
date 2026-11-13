@@ -5,6 +5,27 @@
 
 export type SolutionType = "cloud-function" | "web-app";
 
+// ---------- Destino en Jira Software ----------
+
+export interface JiraProject {
+  /** Clave del proyecto, prefijo de sus issues (ej. "SQSDT"). */
+  key: string;
+  /** Nombre visible (ej. "SQ Service Desk Transform"). */
+  name: string;
+}
+
+export interface JiraSprint {
+  id: number;
+  name: string;
+  state: "active" | "future";
+}
+
+/** Dónde se crea la Historia: proyecto + sprint (o backlog). */
+export interface JiraTarget {
+  project: JiraProject;
+  sprint: JiraSprint | "backlog";
+}
+
 // ---------- Especificación (SDD) ----------
 
 export type SpecStatus = "draft" | "approved";
@@ -35,6 +56,11 @@ export interface Spec {
   openQuestions: string[];
   version: number;
   status: SpecStatus;
+  /**
+   * Proyecto y sprint donde se creará la Historia. Lo define la preferencia del usuario, el
+   * requerimiento o una pregunta del agente; se puede editar antes de aprobar. Requerido para aprobar.
+   */
+  jiraTarget?: JiraTarget;
   approvedBy?: string;
   /** ISO-8601 */
   approvedAt?: string;

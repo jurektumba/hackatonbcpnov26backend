@@ -9,6 +9,15 @@ import type { JiraTools } from "@hack/contracts";
  */
 export function realJira(): JiraTools {
   return {
+    // TODO persona 3: GET /rest/api/3/project/search (proyectos con permiso CREATE_ISSUES).
+    async listProjects() {
+      throw new Error("realJira.listProjects no implementado (persona 3)");
+    },
+    // TODO persona 3: tablero del proyecto (GET /rest/agile/1.0/board?projectKeyOrId=KEY) y luego
+    // GET /rest/agile/1.0/board/{id}/sprint?state=active. Para agregar al sprint: POST /rest/agile/1.0/sprint/{id}/issue.
+    async getActiveSprint(_projectKey) {
+      throw new Error("realJira.getActiveSprint no implementado (persona 3)");
+    },
     async createStory(_spec, _plan) {
       throw new Error("realJira.createStory no implementado (persona 3)");
     },

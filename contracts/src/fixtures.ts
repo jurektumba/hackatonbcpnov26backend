@@ -60,6 +60,10 @@ export const demoSpec: Spec = {
   ],
   outOfScope: ["Notificaciones por SMS o push.", "Cambio de los límites por parte del cliente."],
   openQuestions: [],
+  jiraTarget: {
+    project: { key: "SQSDT", name: "SQ Service Desk Transform" },
+    sprint: { id: 24, name: "SQSDT Sprint 24", state: "active" },
+  },
   version: 1,
   status: "draft",
 };

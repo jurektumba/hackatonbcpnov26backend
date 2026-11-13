@@ -30,6 +30,12 @@ lineamientos de desarrollo. Además, **construir el caso de negocio con números
   Fuera de alcance · Lineamientos aplicados (links) · "Generado por el agente a partir de la spec v{version}".
 - Label `generado-por-agente`.
 
+### `listProjects()` y `getActiveSprint(projectKey)`
+- Proyectos donde el usuario puede crear issues (`/rest/api/3/project/search`).
+- Sprint activo del tablero del proyecto (`/rest/agile/1.0/board?projectKeyOrId=…` → `/board/{id}/sprint?state=active`); `null` si no hay.
+- `createStory` usa `spec.jiraTarget.project.key`; si `sprint` no es `"backlog"`, mover la Historia al sprint
+  (`POST /rest/agile/1.0/sprint/{id}/issue`).
+
 ### `createSubtasks(story, tasks)`
 - Una subtarea por `Task`, en orden. Summary: `"T-01 · <title>"`. Descripción con criterios cubiertos.
 - Si existe campo de estimación, usar `estimateHours`.
