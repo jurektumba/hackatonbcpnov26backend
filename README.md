@@ -35,7 +35,7 @@ Visión, decisiones de arquitectura, cronograma de 6 h y reglas: [`specs/000-con
 Clona ambos repos **como carpetas hermanas** (el frontend copia los contratos desde aquí):
 
 ```bash
-git clone https://github.com/hybridcloudcompany/hackatonbcpnov26backend.git
+git clone https://github.com/jurektumba/hackatonbcpnov26backend.git
 ```
 
 ```bash

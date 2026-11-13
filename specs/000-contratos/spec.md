@@ -26,7 +26,7 @@ con trazabilidad de punta a punta y sin re-escribir la misma información 5 vece
 
 | # | Decisión | Motivo |
 |---|---|---|
-| D1 | **Dos repos:** frontend [`jurektumba/hackatonbcpnov26`](https://github.com/jurektumba/hackatonbcpnov26) (Next.js) y backend [`hybridcloudcompany/hackatonbcpnov26backend`](https://github.com/hybridcloudcompany/hackatonbcpnov26backend) (TypeScript, npm workspaces) | Decisión de la organización de la hackatón; cada repo con su `npm install` |
+| D1 | **Dos repos:** frontend [`jurektumba/hackatonbcpnov26`](https://github.com/jurektumba/hackatonbcpnov26) (Next.js) y backend [`jurektumba/hackatonbcpnov26backend`](https://github.com/jurektumba/hackatonbcpnov26backend) (TypeScript, npm workspaces) | Decisión de la organización de la hackatón; cada repo con su `npm install` |
 | D2 | `contracts/` del backend es la única fuente de tipos; el frontend tiene una **copia** en `lib/contracts/` sincronizada con `npm run sync:contracts` (repos clonados como carpetas hermanas) | 5 IAs trabajando en paralelo divergen si no hay contrato fijo; copiar es más simple que publicar un paquete en 6 h |
 | D3 | Cada tool tiene `mock` + `real`, selector `USE_MOCKS` (default `true`) | Nadie bloquea a nadie; la demo tiene plan B si falla una API |
 | D4 | **El LLM solo actúa en DISCOVERY y SPEC_DRAFT.** Tras la aprobación, el pipeline es **código determinista** (como `demo-mock.ts`) | Confiabilidad en la demo y auditabilidad: el LLM no decide crear tickets por su cuenta |
