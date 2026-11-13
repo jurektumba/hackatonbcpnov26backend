@@ -3,5 +3,5 @@ import { mockGitHub } from "./mock";
 import { realGitHub } from "./real";
 
 export function createGitHubTools(): GitHubTools {
-  return process.env.USE_MOCKS === "false" ? realGitHub() : mockGitHub();
+  return process.env.USE_MOCKS === "false" && process.env.MOCK_GITHUB !== "true" ? realGitHub() : mockGitHub();
 }

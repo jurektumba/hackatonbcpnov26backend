@@ -1,4 +1,4 @@
-import type { JsmTools, OcdTicket } from "@hack/contracts";
+import { HUMAN_ONLY_OCD_STATES, type JsmTools, type OcdTicket } from "@hack/contracts";
 import { buildChecklist } from "./checklist";
 
 const BASE = "https://ejemplo.atlassian.net/servicedesk/customer/portal/1";
@@ -24,7 +24,10 @@ export function mockJsm(): JsmTools {
     async validateOcdTransition(ocd, to) {
       return buildChecklist(ocd, to);
     },
-    async transitionOcd(ocd, to) {
+    async transitionOcd(ocd, to, actor) {
+      if (HUMAN_ONLY_OCD_STATES.includes(to) && !actor) {
+        throw new Error(`La transición a ${to} la debe hacer una persona (falta actor)`);
+      }
       const result = buildChecklist(ocd, to);
       if (!result.ok) {
         const failed = result.checks.filter((c) => !c.passed).map((c) => c.id).join(", ");

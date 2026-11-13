@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./real": "./src/real.ts"
+    "./real": "./src/real.ts",
+    "./gateway": "./src/gateway.ts"
   },
   "dependencies": {
     "@hack/contracts": "*"

@@ -1,4 +1,5 @@
 import type { JiraIssueRef, JiraProject, JiraSprint, JiraTools, Plan, Spec, Task } from "@hack/contracts";
+import { gateway } from "./gateway";
 
 /**
  * Jira real a través del servicio jurektumba/jira-backend (.NET), que guarda las credenciales de Atlassian.
@@ -7,23 +8,6 @@ import type { JiraIssueRef, JiraProject, JiraSprint, JiraTools, Plan, Spec, Task
  *   JIRA_STORY_TYPE       tipo de issue para la Historia (en GRUP: "Historia")
  */
 const STORY_TYPE = () => process.env.JIRA_STORY_TYPE ?? "Historia";
-
-async function gateway<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
-  const base = process.env.JIRA_GATEWAY_URL;
-  if (!base) throw new Error("Falta JIRA_GATEWAY_URL (URL del servicio jira-backend)");
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (process.env.JIRA_GATEWAY_API_KEY) headers["X-Api-Key"] = process.env.JIRA_GATEWAY_API_KEY;
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-
-  const res = await fetch(`${base.replace(/\/$/, "")}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`jira-backend respondió ${res.status} en ${method} ${path}: ${text.slice(0, 500)}`);
-  return (text ? JSON.parse(text) : null) as T;
-}
 
 /** Descripción de la Historia en texto plano (el servicio la convierte a ADF, una línea por párrafo). */
 export function storyDescription(spec: Spec, plan: Plan): string {

@@ -10,7 +10,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "demo:mock": "tsx agent/src/demo-mock.ts",
-    "smoke:jira": "tsx agent/src/smoke-jira.ts"
+    "smoke:jira": "tsx agent/src/smoke-jira.ts",
+    "smoke:ocd": "tsx agent/src/smoke-ocd.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
