@@ -1,6 +1,6 @@
-import { HUMAN_ONLY_OCD_STATES, type JsmTools, type OcdInput, type OcdState, type OcdTicket, type ValidationResult } from "@hack/contracts";
+import { HUMAN_ONLY_OCD_STATES, buildApprovals, pendingApprovals, type JsmTools, type OcdInput, type OcdState, type OcdTicket, type ValidationResult } from "@hack/contracts";
 import { gateway } from "@hack/tools-jira/gateway";
-import { buildChecklist } from "./checklist";
+import { APPROVER_LABELS, applyApproval, buildChecklist } from "./checklist";
 
 /**
  * Tickets OCD reales. En esta hackatón el OCD vive en un proyecto de **Jira Software** (no JSM),
@@ -84,7 +84,21 @@ export function realJsm(): JsmTools {
         storyKey: story.key,
         prUrl: pullRequest.url,
         evidence,
+        approvals: buildApprovals(spec),
       } satisfies OcdTicket;
+    },
+
+    async approveOcd(ocd, role, approvedBy) {
+      const updated = applyApproval(ocd, role, approvedBy);
+      const pending = pendingApprovals(updated.approvals).map((a) => APPROVER_LABELS[a.role]);
+      // Auditoría: cada aprobación queda como comentario en el ticket OCD.
+      await gateway("POST", `/api/tickets/${encodeURIComponent(ocd.key)}/comments`, {
+        body: [
+          `Lanzalo: aprobado por ${approvedBy} como ${APPROVER_LABELS[role]}.`,
+          pending.length ? `Pendientes: ${pending.join(", ")}.` : "Aprobaciones obligatorias completas: listo para pasar a Producción.",
+        ].join("\n"),
+      });
+      return updated;
     },
 
     async validateOcdTransition(ocd, to) {

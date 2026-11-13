@@ -5,7 +5,8 @@
  *     a medida que cada persona termina su versión real.
  * Uso: npm run demo:mock
  */
-import { HUMAN_ONLY_OCD_STATES, OCD_FLOW, type OcdTicket, type Spec } from "@hack/contracts";
+import { HUMAN_ONLY_OCD_STATES, OCD_FLOW, pendingApprovals, type OcdTicket, type Spec } from "@hack/contracts";
+import { APPROVER_LABELS } from "@hack/tools-jsm";
 import { DEMO_REQUIREMENT, DEMO_USER, demoPlan, demoSpec, demoTasks } from "@hack/contracts/fixtures";
 import { createToolSet } from "./tools";
 
@@ -57,7 +58,8 @@ async function main() {
     console.log(`  → ${to}: [${marks}]`);
   }
 
-  log("Fin", `OCD ${ocd.key} listo para aprobación humana (calendarizado: ${ocd.scheduledFor ?? "—"})`);
+  const pending = pendingApprovals(ocd.approvals).map((a) => APPROVER_LABELS[a.role]);
+  log("Fin", `OCD ${ocd.key} en ${ocd.state}, esperando aprobaciones de: ${pending.join(", ")} (calendarizado: ${ocd.scheduledFor ?? "—"})`);
 }
 
 main().catch((err) => {

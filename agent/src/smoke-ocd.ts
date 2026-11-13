@@ -4,7 +4,7 @@
  *   npm run smoke:ocd
  * Requiere JIRA_GATEWAY_URL (y JIRA_GATEWAY_API_KEY si el servicio la exige). Crea issues reales de prueba.
  */
-import { HUMAN_ONLY_OCD_STATES, OCD_FLOW, type JiraTarget, type OcdTicket, type Spec } from "@hack/contracts";
+import { HUMAN_ONLY_OCD_STATES, OCD_FLOW, pendingApprovals, type JiraTarget, type OcdTicket, type Spec } from "@hack/contracts";
 import { demoPlan, demoSpec, demoTasks } from "@hack/contracts/fixtures";
 import { mockGitHub } from "@hack/tools-github/mock";
 import { realJira } from "@hack/tools-jira/real";
@@ -44,6 +44,13 @@ async function main() {
 
   for (const to of OCD_FLOW.slice(1)) {
     const human = HUMAN_ONLY_OCD_STATES.includes(to);
+    // Antes de Producción aprueba cada rol obligatorio (personas simuladas en la prueba).
+    if (to === "PRODUCCION") {
+      for (const a of pendingApprovals(ocd.approvals)) {
+        ocd = await jsm.approveOcd(ocd, a.role, `${a.role.toLowerCase()}@prueba`);
+        console.log(`  ✓ aprobó ${a.role}`);
+      }
+    }
     ocd = await jsm.transitionOcd(ocd, to, human ? "prueba@pase" : undefined);
     console.log(`  → ${to}${human ? " (acción humana simulada)" : ""}${ocd.scheduledFor ? `, fecha de pase ${ocd.scheduledFor.slice(0, 10)}` : ""}`);
   }

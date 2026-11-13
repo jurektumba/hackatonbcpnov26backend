@@ -14,6 +14,11 @@ Es probablemente **el mayor ahorro de la solución**: dueño de que se note en l
 > crea el ticket en Validación enlazado a la Historia, transiciona por nombre de estado, comenta el checklist
 > en cada paso y pone la fecha de pase al calendarizar. Prueba: `npm run smoke:ocd`.
 
+> **Aprobadores:** el pase a Producción lo aprueban varios roles: Líder Técnico, Chapter Lead, QA Chapter Lead, PO y,
+> cuando el requerimiento es de seguridad, el Analista de seguridad (`buildApprovals`, `requiresSecurityReview`).
+> El agente lleva el OCD hasta **Aprobación** ("esperando aprobaciones"); cada rol aprueba con `approveOcd`
+> (comentario de auditoría en Jira) y **Producción** exige todas las obligatorias (`approvals-complete`) y una persona.
+
 ## Parte A — Modelar el OCD en JSM
 - Proyecto JSM (en el sitio de persona 3) con request type **"OCD - One Click Deploy"**.
 - Workflow con los estados de `OCD_FLOW`:

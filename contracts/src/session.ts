@@ -3,6 +3,7 @@
  * entre el backend (repo hackatonbcpnov26backend, persona 2) y el frontend (repo hackatonbcpnov26, persona 1).
  */
 import type {
+  ApproverRole,
   DevIssueRef,
   Evidence,
   JiraIssueRef,
@@ -69,6 +70,7 @@ export interface Session {
 // POST   /sessions/:id/approve        body: ApproveSpecRequest     -> 202
 // POST   /sessions/:id/ocd/validate   body: OcdTransitionRequest   -> ValidationResult
 // POST   /sessions/:id/ocd/transition body: OcdTransitionRequest   -> OcdTicket
+// POST   /sessions/:id/ocd/approve    body: OcdApproveRequest      -> OcdTicket
 // GET    /sessions/:id/events         -> text/event-stream de AgentEvent (SSE)
 // GET    /jira/projects                                            -> JiraProject[]
 // GET    /jira/projects/:key/active-sprint                         -> JiraSprint | null
@@ -93,6 +95,11 @@ export interface UpdateSpecRequest {
 export interface ApproveSpecRequest {
   approvedBy: string;
 }
+export interface OcdApproveRequest {
+  role: ApproverRole;
+  approvedBy: string;
+}
+
 export interface OcdTransitionRequest {
   to: OcdState;
   /** Requerido si `to` está en HUMAN_ONLY_OCD_STATES. */
