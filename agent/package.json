@@ -1,0 +1,16 @@
+{
+  "name": "@hack/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo:mock": "tsx src/demo-mock.ts"
+  },
+  "dependencies": {
+    "@hack/contracts": "*",
+    "@hack/tools-confluence": "*",
+    "@hack/tools-github": "*",
+    "@hack/tools-jira": "*",
+    "@hack/tools-jsm": "*"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "hackatonbcpnov26backend",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "contracts",
+    "tools/*",
+    "agent"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "demo:mock": "tsx agent/src/demo-mock.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
