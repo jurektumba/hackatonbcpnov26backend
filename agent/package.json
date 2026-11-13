@@ -7,10 +7,12 @@
     "demo:mock": "tsx src/demo-mock.ts"
   },
   "dependencies": {
+    "@github/copilot-sdk": "^1.0.33",
     "@hack/contracts": "*",
     "@hack/tools-confluence": "*",
     "@hack/tools-github": "*",
     "@hack/tools-jira": "*",
-    "@hack/tools-jsm": "*"
+    "@hack/tools-jsm": "*",
+    "zod": "^4.6.7"
   }
 }

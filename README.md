@@ -58,6 +58,21 @@ git switch feature/p2-agente
 `demo:mock` corre el flujo completo con mocks. Con `USE_MOCKS=false` usa las APIs reales: es la prueba de
 humo en cada punto de integración.
 
+## Levantar el agente (servidor para el frontend)
+
+```bash
+npm run agent
+```
+
+API HTTP + SSE en `http://localhost:4000` (contrato en `contracts/src/session.ts`). Lee `.env`:
+
+- `AGENT_BRAIN=scripted` (default): guiones de los dos casos demo, sin LLM. Plan B garantizado.
+- `AGENT_BRAIN=copilot`: GitHub Copilot SDK para descubrir y especificar (usa la sesión de `gh auth`, del Copilot CLI o
+  `COPILOT_GITHUB_TOKEN`). Si no arranca, cae en el guionado y lo avisa.
+- `USE_MOCKS` / `MOCK_<HERRAMIENTA>`: qué integraciones son reales.
+
+En el frontend: `NEXT_PUBLIC_USE_MOCKS=false` y `NEXT_PUBLIC_AGENT_URL=http://localhost:4000` en `.env.local`.
+
 ## Cómo trabajar con tu IA
 
 Dale como contexto **solo**: tu `specs/00X-*/spec.md` + `tasks.md`, la carpeta `contracts/` y
