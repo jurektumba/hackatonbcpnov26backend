@@ -8,6 +8,7 @@ import type { Brain, SpecDraft } from "./types";
 export function scriptedBrain(): Brain {
   return {
     name: "scripted",
+    slow: false,
     async solutionType(requirement) {
       return findScenario(requirement).spec.solutionType;
     },

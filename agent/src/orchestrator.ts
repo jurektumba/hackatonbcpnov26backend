@@ -21,6 +21,7 @@ import {
   type ValidationResult,
 } from "@hack/contracts";
 import { APPROVER_LABELS } from "@hack/tools-jsm";
+import { matchScenario } from "./brain/scenarios";
 import type { Brain, SpecDraft } from "./brain/types";
 
 /** Error con código HTTP para que el servidor responda bien. */
@@ -42,6 +43,10 @@ interface Runtime {
   started: boolean;
   /** Hay un trabajo del agente en curso (evita mensajes cruzados). */
   busy: boolean;
+  /** El agente ya hizo sus preguntas (si falló antes, el próximo mensaje reintenta el descubrimiento). */
+  discovered: boolean;
+  /** La sesión pasó al cerebro de respaldo: los pasos siguientes lo usan directo (un solo aviso). */
+  usingBackup: boolean;
   target?: JiraTarget;
   guideline?: Guideline;
   user: string;
@@ -60,6 +65,14 @@ const OCD_STATUS_LABEL: Record<string, string> = {
 const JIRA_TARGET_QUESTION = "¿En qué proyecto de Jira creo la Historia, y la agrego al sprint activo o al backlog?";
 
 const now = () => new Date().toISOString();
+
+/** Mensaje entendible para el chat a partir de un error técnico. */
+function friendly(message: string): string {
+  if (/timeout|timed out|session\.idle/i.test(message)) return "Copilot no respondió a tiempo.";
+  if (/auth|token|401|403|unauthorized|forbidden/i.test(message)) return "No pude autenticarme con Copilot.";
+  if (/rate|429|quota|limit/i.test(message)) return "Copilot está limitando las solicitudes en este momento.";
+  return `No pude completar este paso (${message.slice(0, 140)}).`;
+}
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 /** Pausa entre palabras al "escribir" en el chat (0 en pruebas). */
 const STREAM_MS = Number(process.env.AGENT_STREAM_MS ?? 15);
@@ -73,7 +86,37 @@ export class Orchestrator {
   constructor(
     private readonly tools: ToolSet,
     private readonly brain: Brain,
+    /** Cerebro de respaldo (guionado) para casos conocidos si el principal falla. */
+    private readonly backup?: Brain,
   ) {}
+
+  /**
+   * Ejecuta un paso del cerebro. Si falla y el requerimiento es un caso guionado, sigue con el respaldo y lo avisa.
+   */
+  private async think<T>(rt: Runtime, step: (b: Brain) => Promise<T>): Promise<T> {
+    if (rt.usingBackup && this.backup) return step(this.backup);
+    try {
+      return await step(this.brain);
+    } catch (e) {
+      if (!this.backup || !matchScenario(rt.session.requirement)) throw e;
+      const why = e instanceof Error ? e.message : String(e);
+      console.warn(`Cerebro principal falló (${why}); uso el respaldo guionado.`);
+      rt.usingBackup = true;
+      await this.say(rt, `${friendly(why)} Sigo con la versión preparada de este caso.`);
+      return step(this.backup);
+    }
+  }
+
+  /** Une los lineamientos aplicables en uno solo para el cerebro (el primero es el del tipo de solución). */
+  private mergeGuidelines(list: Guideline[]): Guideline {
+    if (list.length === 1) return list[0];
+    return {
+      ...list[0],
+      title: list.map((g) => g.title).join(" + "),
+      content: list.map((g) => `# ${g.title} v${g.version}\n${g.content}`).join("\n\n"),
+      checklist: [...new Set(list.flatMap((g) => g.checklist))],
+    };
+  }
 
   // ---------------------------------------------------------------- utilidades
 
@@ -143,9 +186,14 @@ export class Orchestrator {
   private background(rt: Runtime, work: () => Promise<void>) {
     rt.busy = true;
     work()
-      .catch((e) => {
+      .catch(async (e) => {
         const message = e instanceof Error ? e.message : String(e);
+        console.error(e);
         this.emit(rt, { type: "error", message: `El agente se detuvo: ${message}` });
+        const phase = rt.session.phase;
+        if (phase === "DISCOVERY" || phase === "SPEC_DRAFT") {
+          await this.say(rt, `${friendly(message)} Vuelve a enviar tu mensaje para reintentar.`).catch(() => undefined);
+        }
       })
       .finally(() => {
         rt.busy = false;
@@ -196,6 +244,8 @@ export class Orchestrator {
       listeners: new Set(),
       started: false,
       busy: false,
+      discovered: false,
+      usingBackup: false,
       target: req.jiraTarget,
       user: req.user,
     };
@@ -227,9 +277,11 @@ export class Orchestrator {
     this.changed(rt);
 
     if (rt.session.phase === "DISCOVERY") {
-      this.background(rt, () => this.runSpec(rt, content));
+      // Si el descubrimiento falló, este mensaje lo reintenta; si no, ya son las respuestas.
+      this.background(rt, () => (rt.discovered ? this.runSpec(rt, content) : this.runDiscovery(rt)));
     } else if (rt.session.phase === "SPEC_DRAFT") {
       this.background(rt, async () => {
+        if (this.brain.slow) await this.say(rt, "Aplico el cambio a la especificación; toma unos segundos…");
         const revised = await this.brain.revise({ current: this.draft(rt), request: content, guideline: rt.guideline! });
         this.applyDraft(rt, revised);
         await this.say(rt, revised.reply);
@@ -331,24 +383,59 @@ export class Orchestrator {
 
   private async runDiscovery(rt: Runtime) {
     const requirement = rt.session.requirement;
+    if (this.brain.slow) await this.say(rt, "Analizo tu requerimiento y busco los lineamientos que aplican…");
     if (!rt.target) rt.target = await this.detectTarget(requirement);
-    const type = await this.brain.solutionType(requirement);
-    rt.guideline = await this.tool(
+    const type = await this.think(rt, (b) => b.solutionType(requirement));
+    const guidelines = await this.tool(
       rt,
       "getGuidelines",
-      () => this.tools.confluence.getGuidelines(type),
-      (g) => ({ summary: `Lineamiento aplicado: ${g.title} v${g.version}`, ref: g.url }),
+      () =>
+        this.tools.confluence
+          .findGuidelines(requirement, type)
+          .catch(async () => [await this.tools.confluence.getGuidelines(type)]),
+      (list) => ({
+        summary: `Lineamientos aplicados: ${list.map((g) => `${g.title} v${g.version}`).join(" y ")}`,
+        ref: list[0]?.url,
+      }),
     );
-    const questions = await this.brain.discover({ requirement, guideline: rt.guideline });
-    // Si no se sabe dónde crear la Historia, se suma la pregunta con el número que le toca.
+    rt.guideline = this.mergeGuidelines(guidelines);
+    const guideline = rt.guideline;
+
+    // Las preguntas se escriben en vivo si el cerebro hace streaming.
+    const messageId = randomUUID();
+    let streamed = "";
+    const questions = await this.think(rt, (b) =>
+      b.discover({
+        requirement,
+        guideline,
+        onDelta: (delta) => {
+          streamed += delta;
+          this.emit(rt, { type: "message.delta", messageId, delta });
+        },
+      }),
+    );
+    // Si se pasó a una pregunta extra o no hubo streaming, se completa el texto.
     const numbered = (questions.match(/^\s*\d+\./gm) ?? []).length;
-    const extra = `${numbered ? `${numbered + 1}.` : "-"} ${JIRA_TARGET_QUESTION}`;
-    await this.say(rt, rt.target ? questions : `${questions}\n${extra}`);
+    const extra = rt.target ? "" : `\n${numbered ? `${numbered + 1}.` : "-"} ${JIRA_TARGET_QUESTION}`;
+    const full = questions + extra;
+    const rest = streamed && full.startsWith(streamed) ? full.slice(streamed.length) : streamed ? extra : full;
+    for (const part of rest.split(/(\s+)/)) {
+      if (!part) continue;
+      this.emit(rt, { type: "message.delta", messageId, delta: part });
+      if (STREAM_MS && part.trim()) await sleep(STREAM_MS);
+    }
+    this.emit(rt, { type: "message.done", messageId });
+    rt.session.messages.push({ id: messageId, role: "assistant", content: streamed && !full.startsWith(streamed) ? streamed + extra : full, createdAt: now() });
+    rt.discovered = true;
+    this.changed(rt);
   }
 
   private async runSpec(rt: Runtime, answers: string) {
     if (!rt.target) rt.target = await this.detectTarget(answers);
-    const draft = await this.brain.specify({ requirement: rt.session.requirement, answers, guideline: rt.guideline! });
+    if (this.brain.slow) await this.say(rt, "Armo la especificación con tus respuestas; toma unos segundos…");
+    const draft = await this.think(rt, (b) =>
+      b.specify({ requirement: rt.session.requirement, answers, guideline: rt.guideline! }),
+    );
     draft.spec.jiraTarget = rt.target;
     this.applyDraft(rt, draft);
     this.setPhase(rt, "SPEC_DRAFT");

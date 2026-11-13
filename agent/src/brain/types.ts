@@ -15,10 +15,12 @@ export interface SpecDraft {
  */
 export interface Brain {
   readonly name: string;
+  /** Tarda varios segundos por paso (LLM): el orquestador avisa en el chat mientras trabaja. */
+  readonly slow: boolean;
   /** Tipo de solución, para elegir el lineamiento de Confluence. */
   solutionType(requirement: string): Promise<SolutionType>;
   /** Mensaje con las preguntas aclaratorias (máx. una ronda). */
-  discover(input: { requirement: string; guideline: Guideline }): Promise<string>;
+  discover(input: { requirement: string; guideline: Guideline; onDelta?: (delta: string) => void }): Promise<string>;
   /** Especificación a partir del requerimiento y las respuestas. */
   specify(input: { requirement: string; answers: string; guideline: Guideline }): Promise<SpecDraft>;
   /** Ajusta la spec en borrador según un pedido del usuario. */

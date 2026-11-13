@@ -24,6 +24,11 @@ import type {
 /** Persona 3 — tools/confluence */
 export interface ConfluenceTools {
   getGuidelines(solutionType: SolutionType): Promise<Guideline>;
+  /**
+   * Lineamientos que aplican a un requerimiento: el del tipo de solución más los temáticos
+   * (por ejemplo, remediación SAST si trata de seguridad). El primero es siempre el del tipo.
+   */
+  findGuidelines(requirement: string, solutionType: SolutionType): Promise<Guideline[]>;
 }
 
 /** Persona 3 — tools/jira */

@@ -10,5 +10,9 @@ export function realConfluence(): ConfluenceTools {
     async getGuidelines(_solutionType) {
       throw new Error("realConfluence.getGuidelines no implementado (persona 3)");
     },
+    // TODO persona 3: CQL por label del tipo + búsqueda de texto (siteSearch) para los lineamientos temáticos.
+    async findGuidelines(_requirement, _solutionType) {
+      throw new Error("realConfluence.findGuidelines no implementado (persona 3)");
+    },
   };
 }
