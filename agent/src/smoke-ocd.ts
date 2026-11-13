@@ -23,7 +23,7 @@ async function main() {
   const spec: Spec = {
     ...demoSpec,
     id: "REQ-PRUEBA",
-    title: "[PRUEBA Pase] Flujo OCD de punta a punta (se puede eliminar)",
+    title: "[PRUEBA Lanzalo] Flujo OCD de punta a punta (se puede eliminar)",
     status: "approved",
     approvedBy: "prueba@pase",
     approvedAt: new Date().toISOString(),

@@ -31,7 +31,7 @@ export function storyDescription(spec: Spec, plan: Plan): string {
   if (spec.outOfScope.length) lines.push("FUERA DE ALCANCE", ...spec.outOfScope.map((r) => `• ${r}`), "");
   lines.push("PLAN DE REVERSIÓN", plan.rollbackPlan, "");
   if (plan.guidelineRefs.length) lines.push("LINEAMIENTOS APLICADOS", ...plan.guidelineRefs, "");
-  lines.push(`Generado por Pase a partir de la especificación ${spec.id} v${spec.version}.`);
+  lines.push(`Generado por Lanzalo a partir de la especificación ${spec.id} v${spec.version}.`);
   return lines.join("\n");
 }
 
@@ -64,7 +64,7 @@ export function realJira(): JiraTools {
         issueType: STORY_TYPE(),
         projectKey: project.key,
         sprintId: sprint === "backlog" ? undefined : sprint.id,
-        labels: ["pase", spec.id],
+        labels: ["lanzalo", spec.id],
       });
       return { key: created.key, url: created.url, type: "Story" } satisfies JiraIssueRef;
     },
@@ -76,7 +76,7 @@ export function realJira(): JiraTools {
         `/api/tickets/${encodeURIComponent(story.key)}/subtasks`,
         {
           subtasks: tasks.map((t) => ({ summary: `${t.id} · ${t.title}`.slice(0, 250), description: taskDescription(t) })),
-          labels: ["pase"],
+          labels: ["lanzalo"],
         },
       );
       return created.map((c) => ({ key: c.key, url: c.url, type: "Subtask" }) satisfies JiraIssueRef);
